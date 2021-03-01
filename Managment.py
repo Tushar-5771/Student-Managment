@@ -147,10 +147,14 @@ def Show_Dep():
 def Insert():
 
     def saveData():
-        name = str(inName.get())
-        dep = str(inDep.get())
-        div = inDiv.get()
-        clg = inClg.get()
+        name = str(inName.get().strip())
+        dep = str(inDep.get().strip())
+        div = inDiv.get().strip()
+        clg = inClg.get().strip()
+        inName.delete(0, 'end')
+        inDep.delete(0, 'end')
+        inDiv.delete(0, 'end')
+        inClg.delete(0, 'end')
         if name == '' and dep == '' and div == '' and clg == '':
             mb.showerror('Invalid Input', 'Please All The Fields..')
         else:
@@ -212,10 +216,134 @@ def Insert():
               command=saveData).grid(row=4, column=1)
 
 
+def Search():
+    window = tk.Tk()
+    tk.Label(window, text='Enter Enrollment No.: ', font=(
+        "verdana 12 bold")).grid(row=0, column=0)
+    inEr = tk.Entry(window, font=("verdana 12 bold"))
+    inEr.grid(row=0, column=1)
+    Dis = tk.Label(window, font=("verdana 12 bold"))
+
+    def sData():
+        cur.execute("SELECT * FROM Student WHERE studentid=" +
+                    str(inEr.get()).strip()+";")
+        Dep_Query = cur.fetchone()
+        sName = Dep_Query[1]
+        sDep = Dep_Query[2]
+        sDiv = Dep_Query[3]
+        sClg = Dep_Query[4]
+        Dis.config(text="""Name:{}\nDepartment:{}\nDivision:{}\nCollege:{}""".format(
+            sName, sDep, sDiv, sClg))
+        Dis.grid(row=2, column=0)
+
+    tk.Button(window, text='Search', font=("verdana 12"),
+              command=sData).grid(row=1, column=1)
+
+
+def Update():
+    window = tk.Tk()
+    tk.Label(window, text='Enter Enrollment No.: ', font=(
+        "verdana 12 bold")).grid(row=0, column=0)
+    inEr = tk.Entry(window, font=("verdana 12 bold"))
+    inEr.grid(row=0, column=1)
+    tk.Label(window, text='What you want to upadte',
+             font=("verdana 12 bold")).grid(row=1, column=0)
+    inData = ttk.Combobox(window, values=["Name", "Department", "Division", "College"], font=(
+        "verdana 11 bold"))
+    inData.grid(row=1, column=1)
+
+    fLable = tk.Label(window, font=("verdana 12 bold"))
+    
+
+    def uData():
+        Er = inEr.get().strip()
+        data = inData.get().strip()
+
+
+        qData = ''
+        if data == "Name":
+            qData = 'name'
+            fEntry = tk.Entry(window, font=("verdana 12 bold"))
+            fEntry.grid(row=4, column=1)
+
+        if data == "Department":
+            qData = 'depat'
+            cur.execute("SELECT * FROM Dep;")
+            Dep_Query = cur.fetchall()
+            depLength = len(Dep_Query)
+            Dep_List = []
+            if depLength > 0:
+                for i in range(depLength):
+                    Dep_List.append(Dep_Query[i][1])
+            else:
+                Dep_List.append('Data is not available!!!')
+
+            fEntry = ttk.Combobox(window, values=Dep_List,
+                                  font=("verdana 11 bold"))
+            fEntry.grid(row=4, column=1)
+
+        if data == "Division":
+            qData = 'div'
+            cur.execute("SELECT * FROM Division;")
+            Div_Query = cur.fetchall()
+            divLength = len(Div_Query)
+            Div_List = []
+            if divLength > 0:
+                for i in range(divLength):
+                    Div_List.append(Div_Query[i][1])
+            else:
+                Div_List.append('Data is not available!!!')
+
+            fEntry = ttk.Combobox(window, values=Div_List,
+                                  font=("verdana 11 bold"))
+            fEntry.grid(row=4, column=1)
+
+        if data == "College":
+            qData = 'clg'
+            cur.execute("SELECT * FROM Clg;")
+            Clg_Query = cur.fetchall()
+            ClgLength = len(Clg_Query)
+            Clg_List = []
+            if ClgLength > 0:
+                for i in range(ClgLength):
+                    Clg_List.append(Clg_Query[i][1])
+            else:
+                Clg_List.append('Data is not available!!!')
+
+            fEntry = ttk.Combobox(window, values=Clg_List,
+                                  font=("verdana 11 bold"))
+            fEntry.grid(row=4, column=1)
+
+        fLable.config(text='Enter '+data+':')
+        fLable.grid(row=4, column=0)
+
+        def inUpdate(data):
+            Er = inEr.get().strip()
+            # data = inData.get().strip()
+            val = str(fEntry.get().strip())
+
+            inQuery = "UPDATE student SET "+data+"='"+val+"' WHERE StudentID = "+Er+";"
+            try:
+                cur.execute(inQuery)
+                mb.showinfo('Successful', 'Data Updated Successfullly...')
+            except pg.Error as e:
+                mb.showerror('Error', e)
+            conn.commit()
+
+        tk.Button(window, text='Update', font=("verdana 12"),
+                  command= lambda : inUpdate(qData)).grid(row=5, column=1)
+    
+    tk.Button(window, text='Update', font=("verdana 12"),
+              command=uData).grid(row=2, column=1)
+                  
 def Menu():
     choice = F1_Entry.get().strip()
     if choice == '1':
         Insert()
+    elif choice == '2':
+        Search()
+    elif choice == '3':
+        Update()
     elif choice == '6':
         root.destroy()
 
