@@ -253,12 +253,10 @@ def Update():
     inData.grid(row=1, column=1)
 
     fLable = tk.Label(window, font=("verdana 12 bold"))
-    
 
     def uData():
         Er = inEr.get().strip()
         data = inData.get().strip()
-
 
         qData = ''
         if data == "Name":
@@ -331,11 +329,49 @@ def Update():
             conn.commit()
 
         tk.Button(window, text='Update', font=("verdana 12"),
-                  command= lambda : inUpdate(qData)).grid(row=5, column=1)
-    
+                  command=lambda: inUpdate(qData)).grid(row=5, column=1)
+
     tk.Button(window, text='Update', font=("verdana 12"),
               command=uData).grid(row=2, column=1)
-                  
+
+
+def Delete():
+    window = tk.Tk()
+    tk.Label(window, text='Enter Enrollment No.: ', font=(
+        "verdana 12 bold")).grid(row=0, column=0)
+    inEr = tk.Entry(window, font=("verdana 12 bold"))
+    inEr.grid(row=0, column=1)
+
+    def dData():
+        Er = inEr.get().strip()
+        inQuery = "DELETE FROM student WHERE studentid ="+Er+";"
+        try:
+            cur.execute(inQuery)
+            mb.showinfo('Successful', 'Data Deleted Successfullly...')
+        except pg.Error as e:
+            mb.showerror('Error', e)
+        conn.commit()
+
+    tk.Button(window, text='Delete', font=("verdana 12"),
+              command=dData).grid(row=2, column=1)
+
+
+def Show_Student():
+    try:
+        Query = "SELECT * FROM student;"
+        cur.execute(Query)
+        rows = cur.fetchall()
+        my_w = tk.Tk()
+        i = 0
+        for student in rows:
+            for j in range(len(student)):
+                e = tk.Entry(my_w, width=10, fg='blue')
+                e.grid(row=i, column=j)
+                e.insert(tk.END, student[j])
+            i = i+1
+    except pg.Error as e:
+        mb.showerror('Error', e)
+
 def Menu():
     choice = F1_Entry.get().strip()
     if choice == '1':
@@ -344,6 +380,10 @@ def Menu():
         Search()
     elif choice == '3':
         Update()
+    elif choice == '4':
+        Delete()
+    elif choice == '5':
+        Show_Student()
     elif choice == '6':
         root.destroy()
 
